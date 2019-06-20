@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    <style>
+        #footer {
+            padding: 15px 0;
+            background: #fff;
+            border-top: 1px solid #ddd;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar-wrapper">
+    <div class="container">
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container" th:replace="/common/header::header"></div>
+        </nav>
+    </div>
+</div>
+
+<div class="container theme-showcase" role="main">
+    <div class="page-header">
+        <h1>实名认证 - 申请</h1>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" ><a href="#"><span class="badge">1</span> 基本信息</a></li>
+        <li role="presentation" class="active"><a href="#"><span class="badge">2</span> 资质文件上传</a></li>
+        <li role="presentation"><a href="#"><span class="badge">3</span> 邮箱确认</a></li>
+        <li role="presentation"><a href="#"><span class="badge">4</span> 申请确认</a></li>
+    </ul>
+
+    <form id="uploadCertForm" style="margin-top:20px;" method="post" enctype="multipart/form-data">
+
+            <div class="form-group" th:each="cert:${queryCertByAccttype}">
+                <label for="name" th:text="${cert.name }">${cert.name }</label>
+                <input type="hidden" th:name="'certimgs['+${certStat.index }+']'.certid" th:value="${cert.id }">
+                <input type="file" th:name="'certimgs['+${certStat.index }+']'.fileImg" class="form-control" >
+                <br>
+                <img src="../img/pic.jpg" style="display:none">
+            </div>
+        <button type="button" onclick="window.location.href='apply.html'" class="btn btn-default">上一步</button>
+        <button type="button" id="nextBtn"  class="btn btn-success">下一步</button>
+    </form>
+    <hr>
+</div> <!-- /container -->
+<div class="container" style="margin-top:20px;">
+    <div class="row clearfix" th:replace="/common/footer::footer"></div>
+</div>
+<script src="../jquery/jquery-2.1.1.min.js"></script>
+<script src="../bootstrap/js/bootstrap.min.js"></script>
+<script src="../script/docs.min.js"></script>
+<script src="../jquery/jquery-form/jquery-form.min.js"></script>
+<script type="text/javascript" src="../jquery/layer/layer.js"></script>
+
+<script>
+    $('#myTab a').click(function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    });
+
+
+    $(":file").change(function(event){
+        var files = event.target.files;
+        var file;
+
+        if (files && files.length > 0) {
+            file = files[0];
+
+            var URL = window.URL || window.webkitURL;
+            // 本地图片路径
+            var imgURL = URL.createObjectURL(file);
+
+            var imgObj = $(this).next().next(); //获取同辈紧邻的下一个元素
+            //console.log(imgObj);
+            imgObj.attr("src", imgURL);
+            imgObj.show();
+        }
+    });
+
+
+    $("#nextBtn").click(function(){
+        var loadingIndex = -1 ;
+        var options = {
+            url:"/member/doUploadCert",
+            beforeSubmit : function(){
+                loadingIndex = layer.msg('数据正在保存中', {icon: 6});
+                return true ; //必须返回true,否则,请求终止.
+            },
+            success : function(result){
+                layer.close(loadingIndex);
+                if(result.success){
+                    layer.msg("数据保存成功", {time:1000, icon:6});
+                    window.location.href="/member/apply";
+                }else{
+                    layer.msg("数据保存失败", {time:1000, icon:5, shift:6});
+                }
+            }
+        };
+
+        $("#uploadCertForm").ajaxSubmit(options); //异步提交
+        return ;
+    });
+
+</script>
+</body>
+</html>
